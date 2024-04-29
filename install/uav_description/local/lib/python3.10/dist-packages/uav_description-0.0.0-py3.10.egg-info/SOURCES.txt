@@ -1,0 +1,7 @@
+setup.py
+uav_description/__init__.py
+uav_description/dummy_module.py
+uav_description.egg-info/PKG-INFO
+uav_description.egg-info/SOURCES.txt
+uav_description.egg-info/dependency_links.txt
+uav_description.egg-info/top_level.txt

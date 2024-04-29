@@ -1,0 +1,249 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <xacro:macro name="base_inertial" params="">
+        <inertial>
+            <origin xyz="${BASE_INERTIAL['com']}"/>
+            <mass value="${BASE_INERTIAL['mass']}"/>
+            <inertia 
+                ixx="${BASE_INERTIAL['inertia']['xx']}" 
+                ixy="${-BASE_INERTIAL['inertia']['xy']}" 
+                ixz="${-BASE_INERTIAL['inertia']['xz']}" 
+                iyy="${BASE_INERTIAL['inertia']['yy']}" 
+                iyz="${-BASE_INERTIAL['inertia']['yz']}" 
+                izz="${BASE_INERTIAL['inertia']['zz']}"/>
+        </inertial>
+    </xacro:macro>
+    <xacro:macro name="link_1_inertial">
+        <inertial>
+            <origin xyz="${LINK_1_INERTIAL['com']}"/>
+            <mass value="${LINK_1_INERTIAL['mass']}"/>
+            <inertia 
+                ixx="${LINK_1_INERTIAL['inertia']['xx']}" 
+                ixy="${-LINK_1_INERTIAL['inertia']['xy']}" 
+                ixz="${-LINK_1_INERTIAL['inertia']['xz']}" 
+                iyy="${LINK_1_INERTIAL['inertia']['yy']}" 
+                iyz="${-LINK_1_INERTIAL['inertia']['yz']}" 
+                izz="${LINK_1_INERTIAL['inertia']['zz']}"/>
+        </inertial>
+    </xacro:macro>
+    <xacro:macro name="link_2_inertial">
+        <inertial>
+            <origin xyz="${LINK_2_INERTIAL['com']}"/>
+            <mass value="${LINK_2_INERTIAL['mass']}"/>
+            <inertia 
+                ixx="${LINK_2_INERTIAL['inertia']['xx']}" 
+                ixy="${-LINK_2_INERTIAL['inertia']['xy']}" 
+                ixz="${-LINK_2_INERTIAL['inertia']['xz']}" 
+                iyy="${LINK_2_INERTIAL['inertia']['yy']}" 
+                iyz="${-LINK_2_INERTIAL['inertia']['yz']}" 
+                izz="${LINK_2_INERTIAL['inertia']['zz']}"/>
+        </inertial>
+    </xacro:macro>
+    <xacro:macro name="link_3_inertial">
+        <inertial>
+            <origin xyz="${LINK_3_INERTIAL['com']}"/>
+            <mass value="${LINK_3_INERTIAL['mass']}"/>
+            <inertia 
+                ixx="${LINK_3_INERTIAL['inertia']['xx']}" 
+                ixy="${-LINK_3_INERTIAL['inertia']['xy']}" 
+                ixz="${-LINK_3_INERTIAL['inertia']['xz']}" 
+                iyy="${LINK_3_INERTIAL['inertia']['yy']}" 
+                iyz="${-LINK_3_INERTIAL['inertia']['yz']}" 
+                izz="${LINK_3_INERTIAL['inertia']['zz']}"/>
+        </inertial>
+    </xacro:macro>
+    <xacro:macro name="link_4_inertial">
+        <inertial>
+            <origin xyz="${LINK_4_INERTIAL['com']}"/>
+            <mass value="${LINK_4_INERTIAL['mass']}"/>
+            <inertia 
+                ixx="${LINK_4_INERTIAL['inertia']['xx']}" 
+                ixy="${-LINK_4_INERTIAL['inertia']['xy']}" 
+                ixz="${-LINK_4_INERTIAL['inertia']['xz']}" 
+                iyy="${LINK_4_INERTIAL['inertia']['yy']}" 
+                iyz="${-LINK_4_INERTIAL['inertia']['yz']}" 
+                izz="${LINK_4_INERTIAL['inertia']['zz']}"/>
+        </inertial>
+    </xacro:macro>
+
+
+    <xacro:macro name="base_collision">
+        <collision>
+            <origin xyz="${BASE_COLLISION['position']}" rpy="${BASE_COLLISION['orientation']}"/>
+            <geometry>
+                <mesh filename="file://$(find ${description_package})/meshes/base_link.STL"/>
+            </geometry>
+        </collision>
+    </xacro:macro>
+    
+    <xacro:macro name="link_1_collision">
+        <collision>
+            <origin xyz="${LINK_1_COLLISION['position']}" rpy="${LINK_1_COLLISION['orientation']}"/>
+            <geometry>
+                <mesh filename="file://$(find ${description_package})/meshes/BL_Link.STL"/>
+            </geometry>
+        </collision>
+    </xacro:macro>
+
+    <xacro:macro name="link_2_collision">
+        <collision>
+            <origin xyz="${LINK_2_COLLISION['position']}" rpy="${LINK_2_COLLISION['orientation']}"/>
+            <geometry>
+                <mesh filename="file://$(find ${description_package})/meshes/BR_Link.STL"/>
+            </geometry>
+        </collision>
+    </xacro:macro>
+    
+    <xacro:macro name="link_3_collision">
+        <collision>
+            <origin xyz="${LINK_3_COLLISION['position']}" rpy="${LINK_3_COLLISION['orientation']}"/>
+            <geometry>
+                <mesh filename="file://$(find ${description_package})/meshes/FL_Link.STL"/>
+            </geometry>
+        </collision>
+    </xacro:macro>
+
+    <xacro:macro name="link_4_collision">
+        <collision>
+            <origin xyz="${LINK_4_COLLISION['position']}" rpy="${LINK_4_COLLISION['orientation']}"/>
+            <geometry>
+                <mesh filename="file://$(find ${description_package})/meshes/FR_Link.STL"/>
+            </geometry>
+        </collision>
+    </xacro:macro>
+
+
+<!-- visual -->
+    <xacro:macro name="base_visual" params="">
+        <visual>
+            <origin xyz="${BASE_VISUAL['position']}" rpy="${BASE_VISUAL['orientation']}"/>
+            <geometry>
+                <mesh filename="file://$(find ${description_package})/meshes/base_link.STL"/>
+            </geometry>
+            <material name="based_color">
+                <color rgba="${BASE_VISUAL['color']}"/>
+            </material>
+        </visual>
+    </xacro:macro>
+
+    <xacro:macro name="link_1_visual">
+        <visual>
+            <origin xyz="${LINK_1_VISUAL['position']}" rpy="${LINK_1_VISUAL['orientation']}"/>
+            <geometry>
+                <mesh filename="file://$(find ${description_package})/meshes/BL_Link.STL"/>
+            </geometry>
+            <material name="link_color">
+                <color rgba="${LINK_1_VISUAL['color']}"/>
+            </material>
+        </visual>
+    </xacro:macro>
+
+    <xacro:macro name="link_2_visual">
+        <visual>
+            <origin xyz="${LINK_2_VISUAL['position']}" rpy="${LINK_2_VISUAL['orientation']}"/>
+            <geometry>
+                <mesh filename="file://$(find ${description_package})/meshes/BR_Link.STL"/>
+            </geometry>
+            <material name="link_color">
+                <color rgba="${LINK_2_VISUAL['color']}"/>
+            </material>
+        </visual>
+    </xacro:macro>
+
+    <xacro:macro name="link_3_visual">
+        <visual>
+            <origin xyz="${LINK_3_VISUAL['position']}" rpy="${LINK_3_VISUAL['orientation']}"/>
+            <geometry>
+                <mesh filename="file://$(find ${description_package})/meshes/FL_Link.STL"/>
+            </geometry>
+            <material name="link_color">
+                <color rgba="${LINK_3_VISUAL['color']}"/>
+            </material>
+        </visual>
+    </xacro:macro>
+
+    <xacro:macro name="link_4_visual">
+        <visual>
+            <origin xyz="${LINK_4_VISUAL['position']}" rpy="${LINK_4_VISUAL['orientation']}"/>
+            <geometry>
+                <mesh filename="file://$(find ${description_package})/meshes/FR_Link.STL"/>
+            </geometry>
+            <material name="link_color">
+                <color rgba="${LINK_4_VISUAL['color']}"/>
+            </material>
+        </visual>
+    </xacro:macro>
+
+
+    <xacro:macro name="joint_1" params="">
+        <joint name="joint_1" type="continuous">
+            <parent link="base_link"/>
+            <child link="link_1"/>
+            <origin xyz="${TRANSFORM_1['position']}" rpy="${TRANSFORM_1['orientation']}"/>
+            <axis xyz="0 0 1"/>
+        </joint>
+    </xacro:macro>
+
+    <xacro:macro name="joint_2" params="">
+        <joint name="joint_2" type="continuous">
+            <parent link="base_link"/>
+            <child link="link_2"/>
+            <origin xyz="${TRANSFORM_2['position']}" rpy="${TRANSFORM_2['orientation']}"/>
+            <axis xyz="0 0 1"/>
+        </joint>
+    </xacro:macro>
+
+    <xacro:macro name="joint_3" params="">
+        <joint name="joint_3" type="continuous">
+            <parent link="base_link"/>
+            <child link="link_3"/>
+            <origin xyz="${TRANSFORM_3['position']}" rpy="${TRANSFORM_3['orientation']}"/>
+            <axis xyz="0 0 1"/>
+        </joint>
+    </xacro:macro>
+
+    <xacro:macro name="joint_4" params="">
+        <joint name="joint_4" type="continuous">
+            <parent link="base_link"/>
+            <child link="link_4"/>
+            <origin xyz="${TRANSFORM_4['position']}" rpy="${TRANSFORM_4['orientation']}"/>
+            <axis xyz="0 0 1"/>
+        </joint>
+    </xacro:macro>
+
+
+    <!-- Both Visual & Dynamics -->
+
+    <xacro:macro name="manipulator" params="">
+        <link name="base_link"/>
+            <xacro:base_visual />
+            <xacro:base_inertial />
+            <xacro:base_collision />
+        </link>
+        <link name="link_1">
+            <xacro:link_1_visual />
+            <xacro:link_1_inertial />
+            <xacro:link_1_collision />
+        </link>
+        <link name="link_2">
+            <xacro:link_2_visual />
+            <xacro:link_2_inertial />
+            <xacro:link_2_collision />
+        </link>
+        <link name="link_3">
+            <xacro:link_3_visual />
+            <xacro:link_3_inertial />
+            <xacro:link_3_collision />
+        </link>
+        <link name="link_4">
+            <xacro:link_4_visual />
+            <xacro:link_4_inertial />
+            <xacro:link_4_collision />
+        </link>
+        <xacro:joint_1 />
+        <xacro:joint_2 />
+        <xacro:joint_3 />
+        <xacro:joint_4 />
+    </xacro:macro>
+
+</robot>

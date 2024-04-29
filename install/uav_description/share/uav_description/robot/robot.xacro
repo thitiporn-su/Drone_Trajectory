@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="uav">
+    <xacro:arg name="robot_name" default=""/>
+    <xacro:property name="namespace" value="$(arg robot_name)"/>
+    <xacro:property name="description_package" value="uav_description"/>
+  
+    <!-- Include all model properties-->
+    <xacro:include filename="$(find ${description_package})/robot/properties.xacro"/>
+    
+    <!-- Include manipulator-->
+    <xacro:include filename="$(find ${description_package})/robot/manipulator.xacro"/>
+
+    
+    <!-- <link name="world"/> -->
+    <xacro:manipulator/>
+    <!-- <joint name="offset" type="fixed">
+        <parent link="world"/>
+        <child link="base_link"/>
+    </joint> -->
+
+</robot>

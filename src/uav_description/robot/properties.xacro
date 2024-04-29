@@ -1,0 +1,53 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="example">
+
+  <!-- declare parameter -->
+  <xacro:property name="description_package" value="uav_description"/>
+
+  <!-- File paths -->
+  <xacro:property name="dynamics_params_path" value="$(find ${description_package})/config/dynamics_parameter.yaml"/> 
+  <xacro:property name="collision_params_path" value="$(find ${description_package})/config/collision_parameter.yaml"/> 
+  <xacro:property name="dp" value="${xacro.load_yaml(dynamics_params_path)}"/> 
+  <xacro:property name="cp" value="${xacro.load_yaml(collision_params_path)}"/> 
+  
+  <!-- Manipulator Visual Properties -->
+  <xacro:property name="BASE_INERTIAL" value="${dp['base']}"/>
+  <xacro:property name="LINK_1_INERTIAL" value="${dp['link_1']}"/>
+  <xacro:property name="LINK_2_INERTIAL" value="${dp['link_2']}"/>
+  <xacro:property name="LINK_3_INERTIAL" value="${dp['link_3']}"/>
+  <xacro:property name="LINK_4_INERTIAL" value="${dp['link_4']}"/>
+
+  <xacro:property name="BASE_COLLISION" value="${cp['base']}"/>
+  <xacro:property name="LINK_1_COLLISION" value="${cp['link_1']}"/>
+  <xacro:property name="LINK_2_COLLISION" value="${cp['link_2']}"/>
+  <xacro:property name="LINK_3_COLLISION" value="${cp['link_3']}"/>
+  <xacro:property name="LINK_4_COLLISION" value="${cp['link_4']}"/>
+
+  <!-- File paths -->
+  <xacro:property name="kinematics_params_path" value="$(find ${description_package})/config/kinematics_parameter.yaml"/> 
+  <xacro:property name="visual_params_path" value="$(find ${description_package})/config/visual_parameter.yaml"/> 
+  <xacro:property name="sensor_params_path" value="$(find ${description_package})/config/sensor_parameter.yaml"/> 
+  
+  <xacro:property name="kp" value="${xacro.load_yaml(kinematics_params_path)}"/> 
+  <xacro:property name="vp" value="${xacro.load_yaml(visual_params_path)}"/> 
+  <xacro:property name="sp" value="${xacro.load_yaml(sensor_params_path)}"/> 
+  
+  <!-- Mathematics Constants -->
+  <xacro:property name="PI" value="3.1415926535897931"/>
+  <!-- Manipulator Visual Properties -->
+  <xacro:property name="BASE" value="${kp['base']}"/>
+  <xacro:property name="TRANSFORM_1" value="${kp['link_1']}"/>
+  <xacro:property name="TRANSFORM_2" value="${kp['link_2']}"/>
+  <xacro:property name="TRANSFORM_3" value="${kp['link_3']}"/>
+  <xacro:property name="TRANSFORM_4" value="${kp['link_4']}"/>
+  <!-- <xacro:property name="LIMIT" value="${kp['joints']}"/> -->
+  
+  <xacro:property name="BASE_VISUAL" value="${vp['base']}"/>
+  <xacro:property name="LINK_1_VISUAL" value="${vp['link_1']}"/>
+  <xacro:property name="LINK_2_VISUAL" value="${vp['link_2']}"/>
+  <xacro:property name="LINK_3_VISUAL" value="${vp['link_3']}"/>
+  <xacro:property name="LINK_4_VISUAL" value="${vp['link_4']}"/>
+
+  <!-- <xacro:property name="SENSOR" value="${sp}"/> -->
+  
+</robot>
