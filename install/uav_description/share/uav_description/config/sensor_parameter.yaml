@@ -1,5 +1,0 @@
-imu:
-  orientation: 0.0 0.0 0.0
-  position: 0.0 0.0 0.0
-  link: end_effector
-

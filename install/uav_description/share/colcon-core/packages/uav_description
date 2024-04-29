@@ -1,1 +1,0 @@
-controller_manager:effort_controllers:gazebo_plugins:gazebo_ros:gazebo_ros2_control:joint_state_broadcaster:joint_state_publisher_gui:rclcpp:rclpy:robot_state_publisher:ros2_control:tf2_msgs:tf2_ros:tf2_tools:velocity_controllers:xacro
