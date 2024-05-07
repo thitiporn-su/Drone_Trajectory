@@ -6,27 +6,27 @@ from queue import PriorityQueue
 
 # Define Constants
 TARGET_ALTITUDE = 5
-SAFETY_DISTANCE = 0.4
+SAFETY_DISTANCE = 0.2
 MAX_STEPS = 100
 
 class MotionPlanning:
     def __init__(self):
         
         # Drone parameters
-        g = 9.81      # m/s^2
-        m = 0.57      # kg
-        Ix = 0.02898  # kgm^2
-        Iy = 0.04615  # kgm^2
-        Iz = 0.00738  # kgm^2
+        self.g = 9.81      # m/s^2
+        self.m = 0.57      # kg
+        self.Ix = 0.02898  # kgm^2
+        self.Iy = 0.04615  # kgm^2
+        self.Iz = 0.00738  # kgm^2
         
         # Initialize drone, setpoint, obstacle
-        self.drone_position = np.array([7.0, 2.0, 1.0])
-        self.setpoint = np.array([1.0, 8.0, 2.0])
-        self.obstacle_position = np.array([1.0, 5.0, 1.0])
+        self.drone_position = np.array([0.0, 0.0, 0.0])
+        self.setpoint = np.array([8.0, 5.0, 5.0])
+        self.obstacle_position = np.array([3.0, 3.0, 3.0])
         self.obstacle_radius = 1.5
         
         # Initialize velocity and acceleration control variables
-        self.velocity_gain = 0.1 
+        self.velocity_gain = 0.3
         self.acceleration_gain = 0.1
         self.max_velocity = 1.0 
         self.max_acceleration = 1.0  
@@ -45,39 +45,52 @@ class MotionPlanning:
         self.dt = 0.1
         
         self.A = np.array([
-            [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0],  
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],  
-            [0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],  
-            [0, 0, 0, 0, 0, 0, 0, g, 0, 0, 0, 0], 
-            [0, 0, 0, 0, 0, 0,-g, 0, 0, 0, 0, 0],  
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],  
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0],  
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],  
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]       
+            [0, 0, 0, 1, 0, 0, 0,      0,      0, 0, 0, 0],  
+            [0, 0, 0, 0, 1, 0, 0,      0,      0, 0, 0, 0],  
+            [0, 0, 0, 0, 0, 1, 0,      0,      0, 0, 0, 0],  
+            [0, 0, 0, 0, 0, 0, 0,      self.g, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 0, 0,-self.g, 0,      0, 0, 0, 0],  
+            [0, 0, 0, 0, 0, 0, 0,      0,      0, 0, 0, 0],  
+            [0, 0, 0, 0, 0, 0, 0,      0,      0, 1, 0, 0],  
+            [0, 0, 0, 0, 0, 0, 0,      0,      0, 0, 1, 0],  
+            [0, 0, 0, 0, 0, 0, 0,      0,      0, 0, 0, 1],  
+            [0, 0, 0, 0, 0, 0, 0,      0,      0, 0, 0, 0],  
+            [0, 0, 0, 0, 0, 0, 0,      0,      0, 0, 0, 0],  
+            [0, 0, 0, 0, 0, 0, 0,      0,      0, 0, 0, 0]       
         ])
 
         self.B = np.array([
-            [0,   0,    0,    0   ],
-            [0,   0,    0,    0   ],
-            [0,   0,    0,    0   ],
-            [0,   0,    0,    0   ],
-            [1/m, 0,    0,    0   ],
-            [0,   0,    0,    0   ],
-            [0,   0,    0,    0   ],
-            [0,   0,    0,    0   ],
-            [0,   0,    0,    0   ],
-            [0,   1/Ix, 0,    0   ],
-            [0,   0,    1/Iy, 0   ],
-            [0,   0,    0,    1/Iz]
+            [0,        0,         0,          0        ],
+            [0,        0,         0,          0        ],
+            [0,        0,         0,          0        ],
+            [0,        0,         0,          0        ],
+            [1/self.m, 0,         0,          0        ],
+            [0,        0,         0,          0        ],
+            [0,        0,         0,          0        ],
+            [0,        0,         0,          0        ],
+            [0,        0,         0,          0        ],
+            [0,        1/self.Ix, 0,          0        ],
+            [0,        0,         1/self.Iy,  0        ],
+            [0,        0,         0,          1/self.Iz]
         ])
 
         self.Ad = np.eye(12) + self.dt * self.A
         self.Bd = self.dt * self.B
 
-        self.Qd = np.eye(12)
+        self.Qd = np.array([
+            [2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  
+            [0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  
+            [0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],  
+            [0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0], 
+            [0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0],  
+            [0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0],  
+            [0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0],  
+            [0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0],  
+            [0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0],  
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0],  
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0],  
+            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2]       
+        ])
         self.Rd = np.eye(4)
         self.Kd = self.compute_lqr()
 
@@ -97,9 +110,13 @@ class MotionPlanning:
             P = P_next
         K = np.linalg.inv(self.Rd + self.B.T @ P @ self.B) @ (self.B.T @ P @ self.A)
         return K
-    
+        
     def calculate_control_input(self):
-        self.u = -self.Kd.dot(self.x - np.concatenate((self.setpoint, np.zeros(9))))
+        self.x[:3] = self.drone_position
+        self.x[6:9] = self.current_velocity
+
+        self.u = -np.dot(self.Kd, self.x)
+        self.u = np.clip(self.u, -self.max_acceleration, self.max_acceleration)
 
     def update_velocity(self):
         self.current_velocity += self.u[:3] * self.dt
@@ -155,10 +172,32 @@ class MotionPlanning:
         path.reverse()
         return path
 
+    # def plan_path(self):
+    #     start = (int(self.drone_position[0]), int(self.drone_position[1]), int(self.drone_position[2]))
+    #     goal = (int(self.setpoint[0]), int(self.setpoint[1]), int(self.setpoint[2]))
+    #     return self.a_star(start, goal)
+    
     def plan_path(self):
         start = (int(self.drone_position[0]), int(self.drone_position[1]), int(self.drone_position[2]))
         goal = (int(self.setpoint[0]), int(self.setpoint[1]), int(self.setpoint[2]))
-        return self.a_star(start, goal)
+        global_path = self.a_star(start, goal)
+        
+        local_path = []
+        for i in range(len(global_path)):
+            current_position = np.array(global_path[i])
+            
+            if np.linalg.norm(current_position - self.setpoint) < SAFETY_DISTANCE:
+                local_path.append(self.setpoint)
+                break
+            next_position = np.array(global_path[min(i + 1, len(global_path) - 1)])
+            desired_velocity = (next_position - current_position) / self.dt
+            
+            if self.check_collision(current_position + desired_velocity):
+                desired_velocity = (self.setpoint - current_position) / np.linalg.norm(self.setpoint - current_position)
+            desired_velocity *= self.velocity_gain 
+            local_path.append(current_position + desired_velocity)
+        
+        return local_path
 
     def avoid_obstacle(self, path):
         for position in path:
@@ -171,29 +210,51 @@ class MotionPlanning:
                 return new_position
         return None
 
-    # Visualize as Continuous plot
     def update_drone_position(self, frame):
         time_elapsed = frame * self.dt 
         real_time_elapsed = time.time() - self.start_time
         
-        self.update_velocity()
-        self.update_acceleration()
+        self.calculate_control_input()
+        
+        thrust = self.u[0] + self.m * self.g
+        Tx = self.u[1]
+        Ty = self.u[2]
+        Tz = self.u[3]
+
+        self.x[3] = self.current_velocity[0]
+        self.x[4] = self.current_velocity[1]
+        self.x[5] = self.current_velocity[2]
+        self.x[9] = self.current_velocity[0]
+        self.x[10] = self.current_velocity[1]
+        self.x[11] = self.current_velocity[2]
+
+        self.x[0] += self.dt * self.current_velocity[0]
+        self.x[1] += self.dt * self.current_velocity[1]
+        self.x[2] += self.dt * self.current_velocity[2]
+
+        self.x[3] += self.dt * (self.g - (Tx / self.m))
+        self.x[4] += self.dt * (Ty / self.m)
+        self.x[5] += self.dt * (Tz / self.m)
+
+        self.current_velocity[0] = self.x[3]
+        self.current_velocity[1] = self.x[4]
+        self.current_velocity[2] = self.x[5]
+
+        self.drone_position[0] = self.x[0]
+        self.drone_position[1] = self.x[1]
+        self.drone_position[2] = self.x[2]
+
+        # Update drone velocity and position
+        self.current_velocity += self.u[:3] * self.dt
+        self.current_velocity = np.clip(self.current_velocity, -self.max_velocity, self.max_velocity)
         self.drone_position += self.current_velocity * self.dt
-        # self.calculate_control_input()
-        # self.x = self.Ad.dot(self.x) + self.Bd.dot(self.u)        
-        # self.drone_position = self.x[:3]
         
         path = self.plan_path()
-
-        # if len(path) > 1:
-        #     new_position = np.array(path[1])
-        #     direction = (new_position - self.drone_position) / np.linalg.norm(new_position - self.drone_position)
-        #     self.drone_position += 0.2 * direction
 
         if len(path) > 1:
             new_position = np.array(path[1])
             direction = (new_position - self.drone_position) / np.linalg.norm(new_position - self.drone_position)
-            new_position_with_safety = self.drone_position + 0.2 * direction
+            new_position_with_safety = self.drone_position + self.velocity_gain * direction
             
             if not self.check_collision(new_position_with_safety):
                 self.drone_position = new_position_with_safety
@@ -210,12 +271,6 @@ class MotionPlanning:
         self.ax_mp.set_ylabel('Y [m]')
         self.ax_mp.set_zlabel('Z [m]')
         self.ax_mp.set_title('Motion Planning Trajectory')
-
-        self.ax_mp.clear()
-        self.ax_mp.set_xlabel('X [m]')
-        self.ax_mp.set_ylabel('Y [m]')
-        self.ax_mp.set_zlabel('Z [m]')
-        self.ax_mp.set_title('Motion Planning Trajectory')
         
         line_length = 0.5
         self.ax_mp.plot([self.drone_position[0]- line_length / 2, self.drone_position[0] + line_length / 2], 
@@ -227,7 +282,6 @@ class MotionPlanning:
                         [self.drone_position[2], self.drone_position[2]], 
                         c='b')
         
-        # self.ax_mp.scatter(self.drone_position[0], self.drone_position[1], self.drone_position[2], c='b', marker='o', label='Drone')
         self.ax_mp.text(self.drone_position[0], self.drone_position[1], self.drone_position[2], "Drone", color='b')
         self.ax_mp.scatter(self.setpoint[0], self.setpoint[1], self.setpoint[2], c='g', marker='*', label='Setpoint')
         self.ax_mp.text(self.setpoint[0], self.setpoint[1], self.setpoint[2], "Setpoint", color='g')
@@ -265,3 +319,4 @@ if __name__ == "__main__":
     motion_planning = MotionPlanning()
     motion_planning.start_animation()
    
+    
