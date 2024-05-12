@@ -14,8 +14,8 @@ l = 0.23      # assume arm length
 Ir = 6e-5     # Inertia of motor
 kf = 3.13e-5  # Thrust coefficient
 km = 7.5e-7   # Moment coefficient
-kt = np.array([[0.1, 0, 0], [0, 0.1, 0], [0, 0, 0.1]])  # Aerodynamic thrust drag coefficient
-kr = np.array([[0.1, 0, 0], [0, 0.1, 0], [0, 0, 0.1]])  # Aerodynamic moment drag coefficient
+kt = np.eye(3) * 0.1  # Aerodynamic thrust drag coefficient
+kr = np.eye(3) * 0.1  # Aerodynamic moment drag coefficient
 
 # Initialize drone, setpoint, obstacle
 drone_position = np.array([0.0, 0.0, 0.0])
@@ -49,19 +49,20 @@ A = np.array([
 ])
 
 B = np.array([
-    [0,        0,         0,          0        ],
-    [0,        0,         0,          0        ],
-    [0,        0,         0,          0        ],
-    [0,        0,         0,          0        ],
-    [1/m, 0,         0,          0        ],
-    [0,        0,         0,          0        ],
-    [0,        0,         0,          0        ],
-    [0,        0,         0,          0        ],
-    [0,        0,         0,          0        ],
-    [0,        1/Ix, 0,          0        ],
-    [0,        0,         1/Iy,  0        ],
-    [0,        0,         0,          1/Iz]
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [1/m, 0, 0, 0],
+    [0, 1/m, 0, 0],
+    [0, 0, 1/m, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 1/Iz]
 ])
+
 
 A = np.eye(12) + dt * A
 B = dt * B
@@ -70,7 +71,7 @@ Q = np.eye(12) * 1
 R = np.eye(4) * 1
 x = np.zeros(12)
 u = np.zeros(4)
-K = 0
+K = np.zeros((4, 12))
 
 def dynamics(state, control):
     x, y, z, x_dot, y_dot, z_dot, phi, theta, psi, p, q, r = state
@@ -82,14 +83,18 @@ def dynamics(state, control):
     tan_theta = np.tan(theta)
     sin_psi = np.sin(psi)
     cos_psi = np.cos(psi)
+    
+    # Extract linear control inputs and yaw rate control input
+    u = control[:3]  
+    yaw_rate = control[3]  
 
-    f = np.array([
-        kf * (Ir * p**2 - Ir * q**2 + Ir * r**2 - Ir * q**2),
-        kf * (Ir * r**2 - Ir * p**2 + Ir * q**2 - Ir * r**2),
-        km * (Ir * p**2 - Ir * q**2 + Ir * r**2 - Ir * q**2),
-        kf * (Ir * p**2 + Ir * q**2 + Ir * r**2)
-    ])
+    # Update yaw rate dynamics
+    psi_dot = yaw_rate
 
+    # Calculate thrust based on control inputs
+    thrust = np.array([0, 0, -u[2]]) + np.array([0, 0, m * g])
+
+    # Calculate body frame rotation matrix
     m1 = np.array([
         [1, 0, 0],
         [0, cos_phi, sin_phi],
@@ -107,28 +112,31 @@ def dynamics(state, control):
         [-sin_psi, cos_psi, 0],
         [0, 0, 1]
     ])
-
-    thrust = np.array([0, 0, -control[0]]) + np.array([0, 0, m * g])
+    
+    # Calculate thrust in body frame
     T = np.dot(np.dot(m1, m2), m3)
     T_inv = np.linalg.inv(T)
     u = np.dot(T_inv, thrust)
 
+    # Calculate angular velocities
     phi_dot = p + (q * sin_phi + r * cos_phi) * tan_theta
     theta_dot = q * cos_phi - r * sin_phi
-    psi_dot = (q * sin_phi + r * cos_phi) / cos_theta
 
+    # Calculate linear accelerations
     omega_dot = np.array([
         (kt[0][0] * x_dot + u[0]) / m,
         (kt[1][1] * y_dot + u[1]) / m,
         (kt[2][2] * z_dot + u[2]) / m
     ])
 
+    # Calculate angular accelerations
     alpha_dot = np.array([
         (kr[0][0] * p - l * u[0]) / Ix,
         (-kr[1][1] * q + l * u[1]) / Iy,
         (u[2] - kr[2][2] * r) / Iz
     ])
 
+    # Update state derivatives
     state_dot = np.array([
         x_dot, y_dot, z_dot,
         omega_dot[0], omega_dot[1], omega_dot[2],
@@ -136,10 +144,10 @@ def dynamics(state, control):
         alpha_dot[0], alpha_dot[1], alpha_dot[2]
     ])
 
-    return state_dot  
-    
+    return state_dot
 
 def compute_lqr():
+    global K
     P = np.eye(12)
     max_iterations = 1000
     tolerance = 1e-6
@@ -176,7 +184,11 @@ def calculate_control_input():
     current_velocity = np.clip(current_velocity, -max_velocity, max_velocity)
     current_acceleration = np.clip(current_acceleration, -max_acceleration, max_acceleration)
 
-compute_lqr()
+    return u
+
+K = compute_lqr()
 print("K-Gain:", K)
-calculate_control_input()
+u = calculate_control_input()
+state_dot = dynamics(x, u)
+print("State Dot:", state_dot)
 print("Control Input:", u)

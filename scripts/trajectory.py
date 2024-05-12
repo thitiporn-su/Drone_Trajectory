@@ -1,5 +1,6 @@
 import numpy as np
 from queue import PriorityQueue
+from scipy.optimize import minimize
 
 
 SAFETY_DISTANCE = 0.4
@@ -87,6 +88,26 @@ def generate_ts(path):
     ts *= total_time
     return ts, total_time
 
+def minimize_jerk(X, ts):
+    # Define cost function to minimize jerk
+    def cost_function(u):
+        jerk = np.sum(np.abs(np.diff(np.diff(u))))
+        return jerk
+    
+    # Define initial guess for control points
+    initial_guess = X.flatten()
+    
+    # Define bounds for control points
+    bounds = [(None, None)] * len(initial_guess)
+    
+    # Minimize jerk subject to bounds
+    result = minimize(cost_function, initial_guess, bounds=bounds)
+    
+    # Reshape optimized control points
+    optimized_X = result.x.reshape(X.shape)
+    
+    return optimized_X
+
 def traj_opt7(path, total_time, ts):
     m, n = path.shape
     m = m - 1
@@ -164,8 +185,19 @@ def traj_opt7(path, total_time, ts):
 
     for i in range(n):
         X[:, i] = np.linalg.solve(A[:, :, i], Y[:, i])
+        
+    X = minimize_jerk(X, ts)
 
     return X
+
+def traj_opt7_with_dynamic(path, total_time, ts):
+    # Generate initial trajectory using traj_opt7
+    X = traj_opt7(path, total_time, ts)
+    
+    # Minimize jerk to smooth the trajectory
+    optimized_X = minimize_jerk(X, ts)
+    
+    return optimized_X
 
 def trajectory_generator(t, qn, map, path, X, ts, total_time):
     if not t or not qn:
@@ -199,4 +231,5 @@ def trajectory_generator(t, qn, map, path, X, ts, total_time):
         'yaw': yaw,
         'yawdot': yawdot
     }
-    return desired_state
+    return path, X, ts, total_time, desired_state
+

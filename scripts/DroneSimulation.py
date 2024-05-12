@@ -3,8 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.animation as animation
-from trajectory import plan_path, check_collision
-from controller import calculate_control_input
+from trajectory import plan_path, check_collision, traj_opt7, generate_ts
+from controller import calculate_control_input, dynamics, compute_lqr
 
 class DroneAnimation:
     def __init__(self):
@@ -22,11 +22,33 @@ class DroneAnimation:
         self.obstacle_position = np.array([5.0, 3.0, 3.0])
         self.obstacle_radius = 1.5
         self.velocity_gain = 0.3
+        self.time_elapsed = 0
         self.flight_path = []
+        
+        # Initialize LQR controller
+        compute_lqr()
+        
+        # Initialize lists to store velocities, accelerations, XYZ triple dot and XYZ fourth dot
+        self.x_dot_list = []
+        self.y_dot_list = []
+        self.z_dot_list = []
+        self.x_doubledot_list = []
+        self.y_doubledot_list = []
+        self.z_doubledot_list = []
+        self.x_tripledot_list = []
+        self.y_tripledot_list = []
+        self.z_tripledot_list = []
+        self.x_fourthdot_list = []
+        self.y_fourthdot_list = []
+        self.z_fourthdot_list = []
+
+        # Initialize time
+        self.start_time = time.time()
 
     def update_drone_position(self, frame):
         time_elapsed = frame * self.dt 
         real_time_elapsed = time.time() - self.start_time
+        # start_frame_time = time.time()
 
         calculate_control_input()
 
@@ -93,10 +115,52 @@ class DroneAnimation:
             return
         
         self.ax_mp.text2D(0.02, 0.90, f'Real Time : {real_time_elapsed:.1f} s', transform=self.ax_mp.transAxes)
+        
+        # end_frame_time = time.time()
+        # frame_duration = end_frame_time - start_frame_time
+        # self.time_elapsed += frame_duration  
+        # self.plot_velocity_and_acceleration()
+        
+        # Calculate and collect velocities and accelerations
+        if len(self.flight_path) >= 2:
+            x_dot = (self.flight_path[-1][0] - self.flight_path[-2][0]) / self.dt
+            y_dot = (self.flight_path[-1][1] - self.flight_path[-2][1]) / self.dt
+            z_dot = (self.flight_path[-1][2] - self.flight_path[-2][2]) / self.dt
+
+            self.x_dot_list.append(x_dot)
+            self.y_dot_list.append(y_dot)
+            self.z_dot_list.append(z_dot)
+
+            if len(self.x_dot_list) >= 2:
+                x_doubledot = (self.x_dot_list[-1] - self.x_dot_list[-2]) / self.dt
+                y_doubledot = (self.y_dot_list[-1] - self.y_dot_list[-2]) / self.dt
+                z_doubledot = (self.z_dot_list[-1] - self.z_dot_list[-2]) / self.dt
+
+                self.x_doubledot_list.append(x_doubledot)
+                self.y_doubledot_list.append(y_doubledot)
+                self.z_doubledot_list.append(z_doubledot)
+
+                if len(self.x_doubledot_list) >= 2:
+                    x_tripledot = (self.x_doubledot_list[-1] - self.x_doubledot_list[-2]) / self.dt
+                    y_tripledot = (self.y_doubledot_list[-1] - self.y_doubledot_list[-2]) / self.dt
+                    z_tripledot = (self.z_doubledot_list[-1] - self.z_doubledot_list[-2]) / self.dt
+
+                    self.x_tripledot_list.append(x_tripledot)
+                    self.y_tripledot_list.append(y_tripledot)
+                    self.z_tripledot_list.append(z_tripledot)
+
+                    if len(self.x_tripledot_list) >= 2:
+                        x_fourthdot = (self.x_tripledot_list[-1] - self.x_tripledot_list[-2]) / self.dt
+                        y_fourthdot = (self.y_tripledot_list[-1] - self.y_tripledot_list[-2]) / self.dt
+                        z_fourthdot = (self.z_tripledot_list[-1] - self.z_tripledot_list[-2]) / self.dt
+
+                        self.x_fourthdot_list.append(x_fourthdot)
+                        self.y_fourthdot_list.append(y_fourthdot)
+                        self.z_fourthdot_list.append(z_fourthdot)
 
         plt.draw()
         plt.pause(0.001)
-
+        
     def start_animation(self):
         self.start_time = time.time()
         self.animation = animation.FuncAnimation(self.fig_mp, self.update_drone_position, frames=np.arange(0, 100), interval=100)
@@ -105,6 +169,33 @@ class DroneAnimation:
     def stop_animation(self):
         if hasattr(self, 'animation'):
             self.animation.event_source.stop()
+            
+    def plot_velocity_and_acceleration(self):
+        time_elapsed = np.arange(0, len(self.x_dot_list)) * self.dt
 
+        plt.figure(figsize=(12, 6))
+
+        plt.subplot(3, 1, 1)
+        plt.plot(time_elapsed, self.x_dot_list, label='X_dot')
+        plt.plot(time_elapsed, self.y_dot_list, label='Y_dot')
+        plt.plot(time_elapsed, self.z_dot_list, label='Z_dot')
+        plt.xlabel('Time [s]')
+        plt.ylabel('Velocity [m/s]')
+        plt.title('Velocity Components')
+        plt.legend()
+
+        plt.subplot(3, 1, 2)
+        plt.plot(time_elapsed[1:], self.x_doubledot_list, label='X_double_dot')
+        plt.plot(time_elapsed[1:], self.y_doubledot_list, label='Y_double_dot')
+        plt.plot(time_elapsed[1:], self.z_doubledot_list, label='Z_double_dot')
+        plt.xlabel('Time [s]')
+        plt.ylabel('Acceleration [m/s^2]')
+        plt.title('Acceleration Components')
+        plt.legend()
+
+        plt.tight_layout()
+        plt.show()
+        
 drone_animation = DroneAnimation()
 drone_animation.start_animation()
+drone_animation.plot_velocity_and_acceleration()
