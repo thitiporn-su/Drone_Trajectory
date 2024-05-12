@@ -8,6 +8,7 @@ obstacle_position = np.array([5.0, 3.0, 3.0])
 obstacle_radius = 1.5
 dt = 0.1
 
+
 def check_collision(position):
     distance_to_obstacle = np.linalg.norm(position - obstacle_position)
     return distance_to_obstacle < obstacle_radius + SAFETY_DISTANCE
@@ -107,6 +108,7 @@ def minimize_jerk(X, ts):
     optimized_X = result.x.reshape(X.shape)
     
     return optimized_X
+
 
 def traj_opt7(path, total_time, ts):
     m, n = path.shape
