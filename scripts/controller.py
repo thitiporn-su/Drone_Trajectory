@@ -1,9 +1,5 @@
 import numpy as np
 
-# Define Constants
-SAFETY_DISTANCE = 0.4
-MAX_STEPS = 100
-
 # Drone parameters
 g = 9.81      # m/s^2
 m = 0.57      # kg
@@ -20,8 +16,6 @@ kr = np.eye(3) * 0.1  # Aerodynamic moment drag coefficient
 # Initialize drone, setpoint, obstacle
 drone_position = np.array([0.0, 0.0, 0.0])
 setpoint = np.array([8.0, 5.0, 5.0])
-obstacle_position = np.array([5.0, 3.0, 3.0])
-obstacle_radius = 1.5
 
 # Initialize velocity and acceleration control variables
 velocity_gain = 0.3
@@ -62,7 +56,6 @@ B = np.array([
     [0, 0, 0, 0],
     [0, 0, 0, 1/Iz]
 ])
-
 
 A = np.eye(12) + dt * A
 B = dt * B
@@ -161,26 +154,20 @@ def compute_lqr():
 
 def calculate_control_input():
     global current_velocity, current_acceleration, x
-    
-    # Update state
-    x[:3] = drone_position
+
+    x[:3] = drone_position[:3]  
     x[3:6] = current_velocity
 
-    # Calculate control input using LQR
     u = -np.dot(K, x)
     u = np.clip(u, -max_acceleration, max_acceleration)
-    
-    # Update state using dynamics
+
     state_dot = dynamics(x, u)
 
-    # Integrate state derivatives using Euler's method
     x += state_dot * dt
 
-    # Update velocity and acceleration
     current_velocity = x[3:6]
     current_acceleration = state_dot[3:6]
 
-    # Clip velocity and acceleration
     current_velocity = np.clip(current_velocity, -max_velocity, max_velocity)
     current_acceleration = np.clip(current_acceleration, -max_acceleration, max_acceleration)
 

@@ -11,7 +11,7 @@ dt = 0.1
 def check_collision(position):
     distance_to_obstacle = np.linalg.norm(position - obstacle_position)
     return distance_to_obstacle < obstacle_radius + SAFETY_DISTANCE
-    
+
 def a_star(start, goal):
     # f(n) = g(n) + h(n)
     def heuristic(position, goal):
@@ -190,14 +190,14 @@ def traj_opt7(path, total_time, ts):
 
     return X
 
-def traj_opt7_with_dynamic(path, total_time, ts):
-    # Generate initial trajectory using traj_opt7
-    X = traj_opt7(path, total_time, ts)
+# def traj_opt7_with_dynamic(path, total_time, ts):
+#     # Generate initial trajectory using traj_opt7
+#     X = traj_opt7(path, total_time, ts)
     
-    # Minimize jerk to smooth the trajectory
-    optimized_X = minimize_jerk(X, ts)
+#     # Minimize jerk to smooth the trajectory
+#     optimized_X = minimize_jerk(X, ts)
     
-    return optimized_X
+#     return optimized_X
 
 def trajectory_generator(t, qn, map, path, X, ts, total_time):
     if not t or not qn:
@@ -232,4 +232,3 @@ def trajectory_generator(t, qn, map, path, X, ts, total_time):
         'yawdot': yawdot
     }
     return path, X, ts, total_time, desired_state
-

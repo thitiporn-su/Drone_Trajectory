@@ -6,6 +6,7 @@ import matplotlib.animation as animation
 from trajectory import plan_path, check_collision, traj_opt7, generate_ts
 from controller import calculate_control_input, dynamics, compute_lqr
 
+
 class DroneAnimation:
     def __init__(self):
         # Define animation parameters
@@ -116,11 +117,6 @@ class DroneAnimation:
         
         self.ax_mp.text2D(0.02, 0.90, f'Real Time : {real_time_elapsed:.1f} s', transform=self.ax_mp.transAxes)
         
-        # end_frame_time = time.time()
-        # frame_duration = end_frame_time - start_frame_time
-        # self.time_elapsed += frame_duration  
-        # self.plot_velocity_and_acceleration()
-        
         # Calculate and collect velocities and accelerations
         if len(self.flight_path) >= 2:
             x_dot = (self.flight_path[-1][0] - self.flight_path[-2][0]) / self.dt
@@ -173,9 +169,9 @@ class DroneAnimation:
     def plot_velocity_and_acceleration(self):
         time_elapsed = np.arange(0, len(self.x_dot_list)) * self.dt
 
-        plt.figure(figsize=(12, 6))
+        plt.figure(figsize=(10, 6))
 
-        plt.subplot(3, 1, 1)
+        plt.subplot(2, 1, 1)
         plt.plot(time_elapsed, self.x_dot_list, label='X_dot')
         plt.plot(time_elapsed, self.y_dot_list, label='Y_dot')
         plt.plot(time_elapsed, self.z_dot_list, label='Z_dot')
@@ -184,7 +180,7 @@ class DroneAnimation:
         plt.title('Velocity Components')
         plt.legend()
 
-        plt.subplot(3, 1, 2)
+        plt.subplot(2, 1, 2)
         plt.plot(time_elapsed[1:], self.x_doubledot_list, label='X_double_dot')
         plt.plot(time_elapsed[1:], self.y_doubledot_list, label='Y_double_dot')
         plt.plot(time_elapsed[1:], self.z_doubledot_list, label='Z_double_dot')
