@@ -173,8 +173,6 @@ def calculate_control_input():
 
     return u
 
-K = compute_lqr()
-print("K-Gain:", K)
 u = calculate_control_input()
 state_dot = dynamics(x, u)
 print("State Dot:", state_dot)
